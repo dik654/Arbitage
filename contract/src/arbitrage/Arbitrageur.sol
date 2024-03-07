@@ -25,7 +25,7 @@ contract Arbitrageur is IUniswapV2Callee {
         (address token0, address token1) = UniswapV2Library.sortTokens(_path[0], _path[1]);
         repayPair = UniswapV2Library.pairFor(factory, token0, token1);
         (uint256 reserve0, uint256 reserve1) = UniswapV2Library.getReserves(factory, token0, token1);
-        // TODO 최적의 교환비로 교환하기 위해 대출할 토큰의 양 계산방법
+        // TODO 최적의 교환비로 교환하기 위해 대출할 토큰의 양 계산방법 고안
         if (token0 == _path[0]) {
             reserve1 = UniswapV2Library.getAmountOut(reserve0 - 1, reserve0, reserve1);
             reserve0 = reserve0 - 1;
