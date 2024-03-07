@@ -1,13 +1,13 @@
-// SPDX-License-Identifier: GLP v3.0
+// SPDX-License-Identifier: GPL v3.0
 pragma solidity ^0.8.19;
 
-import '../CPMM.sol';
+import '../uniswap/UniswapV2Pair.sol';
 
-library CPMMLibrary {
+library UniswapV2Library {
     function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
-        require(tokenA != tokenB, 'CPMMLIBRARY:IDENTICAL_ADDRESSES');
+        require(tokenA != tokenB, 'UniswapV2Library:IDENTICAL_ADDRESSES');
         (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
-        require(token0 != address(0), 'CPMMLIBRARY:ZERO_ADDRESS');
+        require(token0 != address(0), 'UniswapV2Library:ZERO_ADDRESS');
     }
 
     function pairFor(address factory, address tokenA, address tokenB) internal pure returns (address pair) {
@@ -21,25 +21,25 @@ library CPMMLibrary {
     }
 
     function getInitHash() public pure returns(bytes32){
-        bytes memory bytecode = type(CPMM).creationCode;
+        bytes memory bytecode = type(UniswapV2Pair).creationCode;
         return keccak256(abi.encodePacked(bytecode));
     }
 
     function getReserves(address factory, address tokenA, address tokenB) internal view returns (uint reserveA, uint reserveB) {
         (address token0,) = sortTokens(tokenA, tokenB);
-        (uint reserve0, uint reserve1,) = CPMM(pairFor(factory, tokenA, tokenB)).getReserves();
+        (uint reserve0, uint reserve1,) = UniswapV2Pair(pairFor(factory, tokenA, tokenB)).getReserves();
         (reserveA, reserveB) = tokenA == token0 ? (reserve0, reserve1) : (reserve1, reserve0); 
     }
 
     function quote(uint amountA, uint reserveA, uint reserveB) internal pure returns (uint amountB) {
-        require(amountA > 0, 'CPMMLIBRARY:INSUFFICIENT_AMOUNT');
-        require(reserveA > 0 && reserveB > 0, 'CPMMLIBRARY:INSUFFICIENT_LIQUIDITY');
+        require(amountA > 0, 'UniswapV2Library:INSUFFICIENT_AMOUNT');
+        require(reserveA > 0 && reserveB > 0, 'UniswapV2Library:INSUFFICIENT_LIQUIDITY');
         amountB = amountA * reserveB / reserveA;
     }
 
     function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) internal pure returns (uint amountOut) {
-        require(amountIn > 0, 'CPMMLIBRARY:INSUFFICIENT_INPUT_AMOUNT');
-        require(reserveIn > 0 && reserveOut > 0, 'CPMMLIBRARY:INSUFFICIENT_LIQUIDITY');
+        require(amountIn > 0, 'UniswapV2Library:INSUFFICIENT_INPUT_AMOUNT');
+        require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library:INSUFFICIENT_LIQUIDITY');
         uint amountInWithFee = amountIn * 997;
         uint numerator = amountInWithFee * reserveOut;
         uint denominator = reserveIn * 1000 + amountInWithFee;
@@ -47,15 +47,15 @@ library CPMMLibrary {
     }
 
     function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut) internal pure returns (uint amountIn) {
-        require(amountOut > 0, 'CPMMLIBRARY:INSUFFICIENT_OUTPUT_AMOUNT');
-        require(reserveIn > 0 && reserveOut > 0, 'CPMMLIBRARY:INSUFFICIENT_LIQUIDITY');
+        require(amountOut > 0, 'UniswapV2Library:INSUFFICIENT_OUTPUT_AMOUNT');
+        require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library:INSUFFICIENT_LIQUIDITY');
         uint numerator = reserveIn * amountOut * 1000;
         uint denominator = (reserveOut - amountOut) * 997;
         amountIn = (numerator / denominator) + 1;
     }
 
     function getAmountsOut(address factory, uint amountIn, address[] memory path) internal view returns (uint[] memory amounts) {
-        require(path.length >= 2, 'CPMMLIBRARY:INVALID_PATH');
+        require(path.length >= 2, 'UniswapV2Library:INVALID_PATH');
         amounts = new uint[](path.length);
         amounts[0] = amountIn;
         for (uint i; i < path.length - 1; i++) {
@@ -65,7 +65,7 @@ library CPMMLibrary {
     }
 
     function getAmountsIn(address factory, uint amountOut, address[] memory path) internal view returns (uint[] memory amounts) {
-        require(path.length >= 2, 'CPMMLIBRARY:INVALID_PATH');
+        require(path.length >= 2, 'UniswapV2Library:INVALID_PATH');
         amounts = new uint[](path.length);
         amounts[amounts.length - 1] = amountOut;
         for (uint i = path.length - 1; i > 0; i--) {
