@@ -4,8 +4,8 @@ pragma solidity ^0.8.19;
 // import "../Setup.sol";
 import "../mock/Setup.sol";
 
-// forge test --mt testRewardDistribution -vv
-// forge test --fork-url https://mainnet.infura.io/v3/API_KEY
+// forge test --mc RewardDistributionTest -vv
+// forge test --mc RewardDistributionTest --fork-url https://mainnet.infura.io/v3/API_KEY -vv
 
 contract RewardDistributionTest is Setup {
 

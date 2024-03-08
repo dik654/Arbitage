@@ -5,6 +5,7 @@ pragma solidity ^0.8.19;
 import "./mock/Setup.sol";
 
 // forge test --mc SampleTest -vv
+// forge test --mc SampleTest --fork-url https://mainnet.infura.io/v3/API_KEY -vv
 
 contract SampleTest is Setup {
     address sampleUser = address(0x9999);
