@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.19;
 
-contract RewardDistributor {
+import "../interfaces/IRewardDistributor.sol";
+
+contract RewardDistributor is IRewardDistributor {
     address public rewardToken;
     function claim() external {
 

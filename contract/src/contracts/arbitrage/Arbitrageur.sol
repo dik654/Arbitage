@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.19;
 
+import "../interfaces/IArbitrageur.sol";
 import "../interfaces/IERC20.sol";
 import "../interfaces/IUniswapV2Callee.sol";
 import "../interfaces/IUniswapV2Pair.sol";
 import "../libraries/UniswapV2Library.sol";
 
-contract Arbitrageur is IUniswapV2Callee {
+contract Arbitrageur is IArbitrageur, IUniswapV2Callee {
     address public factory;
     address public repayPair;
     address public repayToken;

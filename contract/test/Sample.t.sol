@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.19;
 
-import "./Setup.sol";
+// import "./Setup.sol";
+import "./mock/Setup.sol";
+
+// forge test --mc SampleTest -vv
 
 contract SampleTest is Setup {
     address sampleUser = address(0x9999);
 
     // 각 토큰의 가격을 확인하는 테스트 (per ether)
-    function testShowPrices() public {
+    function testShowPrices() public view {
         address[] memory path = new address[](2);
         path[0] = address(WETH);
         uint[] memory amountsOut;
