@@ -8,8 +8,8 @@ import "../../src/contracts/libraries/UniswapV2Library.sol";
 // forge test --mc ArbitrageTest -vv
 // forge test --mc --fork-url https://mainnet.infura.io/v3/API_KEY -vv
 
-contract ArbitrageTest is Setup {
 
+contract ArbitrageTest is Setup {
     function testArbitrage() public view {
         console.log("ETH  : ", balance(user, address(0)));
         console.log("FIRE  : ", balance(user, address(FIRE)));
@@ -39,5 +39,17 @@ contract ArbitrageTest is Setup {
         console.log("WATER EARTH : ", amountA, " ", amountB);
         (amountA, amountB) = UniswapV2Library.getReserves(address(factory), address(WIND), address(EARTH));
         console.log("WIND EARTH : ", amountA, " ", amountB);
+    }
+
+    function testFlashswap() public {
+        vm.startPrank(deployer);
+        IERC20(address(FIRE)).approve(address(arbitrageur), 10000 ether);
+        IERC20(address(WETH)).approve(address(arbitrageur), 10000 ether);
+        address pair = UniswapV2Library.pairFor(address(factory), address(FIRE), address(WETH));
+        address[] memory path = new address[](2);
+        path[0] = address(FIRE);
+        path[1] = address(WETH);
+        arbitrageur.arbitrage(path);
+        vm.stopPrank();
     }
 }
