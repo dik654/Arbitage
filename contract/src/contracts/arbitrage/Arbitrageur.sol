@@ -13,67 +13,58 @@ contract Arbitrageur is IArbitrageur, IUniswapV2Callee {
     address public repayToken;
     uint256 public amountToRepay;
 
+    error AlreadyInitialized();
     error NoProfit();
 
-    constructor(address _factory) {
+    /**
+     * @notice  .
+     * @dev     .
+     * @param   _factory  .
+     */
+    function intialize(address _factory) {
+        if (owner != address(0)) {
+            revert AlreadyInitialized();
+        }
         factory = _factory;
     }
 
+    /**
+     * @notice  .
+     * @dev     .
+     * @param   _amount  .
+     * @param   _path  .
+     */
     function arbitrage(
+        uint256 _amount,
         address[] memory _path
     ) external {
-        (address token0, address token1) = UniswapV2Library.sortTokens(_path[0], _path[1]);
-        repayPair = UniswapV2Library.pairFor(factory, token0, token1);
-        (uint256 reserve0, uint256 reserve1) = UniswapV2Library.getReserves(factory, token0, token1);
-        // TODO 최적의 교환비로 교환하기 위해 대출할 토큰의 양 계산방법 고안
-        if (token0 == _path[0]) {
-            reserve1 = UniswapV2Library.getAmountOut(100, reserve0, reserve1);
-            reserve0 = reserve0 - 1;
-            repayToken = token0;
-            amountToRepay = reserve0 - 1;
-        } else {
-            reserve0 = UniswapV2Library.getAmountOut(reserve1 - 1, reserve1, reserve0);
-            reserve1 = reserve1 - 1;
-            repayToken = token1;
-            amountToRepay = reserve1 - 1;
-        }
-        IUniswapV2Pair(repayPair).swap(reserve0, reserve1, address(this), encodePath(_path));
+        // -- arbitrage --
+        // getAmountOut으로 차익거래 시작 토큰 _amount에서 다음 토큰 개수 amountOut 얻기
+        // swap(0, amountOut, 콜백주소, path bytes)
+        // -- uniswapV2Call --
+        // uniswapV2Call에 갚아야할 토큰 개수 _amount + fee 및
+        // swapExactTokensForTokens를 실행하여 차익 거래 실행
+        // 차익 거래 실행에 앞서 getAmountsOut <= _amount + fee라면 revert(수익이 나지않는 경우 revert)
+        // 차익 거래 실행 후 _amount + fee만큼 arbitrage에서 빌린 pool에 갚기
     }
 
+    /**
+     * @notice  .
+     * @dev     .
+     * @param   _amount0  .
+     * @param   _amount1  .
+     * @param   _data  .
+     */
     function uniswapV2Call(address /* _sender */, uint256 _amount0, uint256 _amount1, bytes calldata _data) external {
-        address[] memory path = decodeData(_data);
-        // if (path.length > 1) {
-        //     (address token0, address token1) = UniswapV2Library.sortTokens(path[0], path[1]);
-        //     address pair = UniswapV2Library.pairFor(factory, token0, token1);
-        //     (uint256 reserveA, uint256 reserveB) = UniswapV2Library.getReserves(factory, path[0], path[1]);
-        //     (reserveA, reserveB) = token0 == path[0] ? (_amount0, uint256(0)) : (uint256(0), _amount1); 
-        //     UniswapV2Pair(pair).swap(reserveA, reserveB, address(this), encodePath(path));
-        // } else {
-        //     uint256 balance = IERC20(repayToken).balanceOf(address(this));
-        //     uint256 fee = (amountToRepay * 3) / 997 + 1;
-        //     amountToRepay = amountToRepay + fee;
-        //     IERC20(repayToken).transfer(repayPair, amountToRepay);
-        //     if (balance - amountToRepay > 0) {
-        //         revert NoProfit();
-        //     }
-        // }
-        
-        // about 0.3% fee, +1 to round up
-        uint256 Afee = (_amount0 * 3) / 997 + 1;
-        uint256 AamountToRepay = _amount0 + Afee;
-        uint256 Bfee = (_amount1 * 3) / 997 + 1;
-        uint256 BamountToRepay = _amount1 + Bfee;
 
-        // Transfer flash swap fee from caller
-        IERC20(path[0]).transferFrom(0x000000000000000000000000000000000000DEFf, address(this), Afee);
-        IERC20(path[1]).transferFrom(0x000000000000000000000000000000000000DEFf, address(this), Bfee);
-
-        address pair = UniswapV2Library.pairFor(address(factory), path[0], path[1]);
-        // Repay
-        IERC20(path[0]).transfer(address(pair), AamountToRepay);
-        IERC20(path[1]).transfer(address(pair), BamountToRepay);
     }
 
+    /**
+     * @notice  .
+     * @dev     .
+     * @param   _path  .
+     * @return  data  .
+     */
     function encodePath(address[] memory _path) internal pure returns (bytes memory data) {
         if (_path.length < 2) return new bytes(0);
 
@@ -87,10 +78,14 @@ contract Arbitrageur is IArbitrageur, IUniswapV2Callee {
         return data;
     }
 
+    /**
+     * @notice  .
+     * @dev     .
+     * @param   data  .
+     * @return  address[]  .
+     */
     function decodeData(bytes calldata data) internal pure returns (address[] memory) {
         address[] memory decodedPath = abi.decode(data, (address[]));
         return decodedPath;
     }
-
-
 }
