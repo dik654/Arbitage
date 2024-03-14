@@ -52,8 +52,11 @@ contract SetupAddresses is Test {
             WIND = new TestERC20("WIND", "WIND", 18);
             EARTH = new TestERC20("EARTH", "EARTH", 6);
             REWARD = new TestERC20("REWARD", "REWARD", 18);
-            arbitrageur = new Arbitrageur(address(factory));
+            // TODO upgradeable로 실행
+            arbitrageur = new Arbitrageur();
+            arbitrageur.intialize(msg.sender, address(factory));
             rewardDistributor = new RewardDistributor();
+            rewardDistributor.initialize(msg.sender);
         }
         vm.stopPrank();
     }

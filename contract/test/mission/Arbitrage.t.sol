@@ -8,7 +8,6 @@ import "../../src/contracts/libraries/UniswapV2Library.sol";
 // forge test --mc ArbitrageTest -vv
 // forge test --mc --fork-url https://mainnet.infura.io/v3/API_KEY -vv
 
-
 contract ArbitrageTest is Setup {
     function testArbitrage() public view {
         console.log("ETH  : ", balance(user, address(0)));
@@ -49,7 +48,7 @@ contract ArbitrageTest is Setup {
         address[] memory path = new address[](2);
         path[0] = address(FIRE);
         path[1] = address(WETH);
-        arbitrageur.arbitrage(path);
+        // arbitrageur.arbitrage(amountIn, path);
         vm.stopPrank();
     }
 }

@@ -2,5 +2,5 @@
 pragma solidity ^0.8.19;
 
 interface IArbitrageur {
-    function arbitrage(address[] memory _path) external;
+    function arbitrage(uint256 _amountIn, address[] memory _path) external;
 }
