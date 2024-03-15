@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "../interfaces/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract TestERC20 is IERC20 {
 
@@ -20,15 +20,15 @@ contract TestERC20 is IERC20 {
         _decimals = decimal_;
     }
 
-    function name() public view override returns (string memory) {
+    function name() public view returns (string memory) {
         return _name;
     }
 
-    function symbol() public view override returns (string memory) {
+    function symbol() public view returns (string memory) {
         return _symbol;
     }
 
-    function decimals() public view override returns (uint8) {
+    function decimals() public view returns (uint8) {
         return _decimals;
     }
 

@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.19;
 
+import {Upgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 import "forge-std/Test.sol";
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../../src/contracts/uniswap/UniswapV2Factory.sol";
 import "../../src/contracts/uniswap/UniswapV2Router02.sol";
 import "../../src/contracts/mock/TestERC20.sol";
@@ -10,7 +12,6 @@ import "../../src/contracts/mock/WETH9.sol";
 import "../../src/contracts/arbitrage/Arbitrageur.sol";
 import "../../src/contracts/rewardDistribution/RewardDistributor.sol";
 import "../../src/contracts/interfaces/IUniswapV2Pair.sol";
-import "../../src/contracts/interfaces/IERC20.sol";
 import "../../src/contracts/interfaces/IWETH.sol";
     
 contract SetupAddresses is Test {
@@ -52,11 +53,17 @@ contract SetupAddresses is Test {
             WIND = new TestERC20("WIND", "WIND", 18);
             EARTH = new TestERC20("EARTH", "EARTH", 6);
             REWARD = new TestERC20("REWARD", "REWARD", 18);
-            // TODO upgradeable로 실행
-            arbitrageur = new Arbitrageur();
-            arbitrageur.intialize(msg.sender, address(factory));
-            rewardDistributor = new RewardDistributor();
-            rewardDistributor.initialize(msg.sender);
+            
+            address arbitrageurProxy = Upgrades.deployUUPSProxy(
+                "Arbitrageur.sol",
+                abi.encodeCall(Arbitrageur.initialize, (msg.sender, address(factory)))
+            );
+            arbitrageur = Arbitrageur(arbitrageurProxy);
+            address rewardDistributorProxy = Upgrades.deployUUPSProxy(
+                "RewardDistributor.sol",
+                abi.encodeCall(RewardDistributor.initialize, (msg.sender))
+            );
+            rewardDistributor = RewardDistributor(rewardDistributorProxy);
         }
         vm.stopPrank();
     }

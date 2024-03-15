@@ -5,8 +5,8 @@ pragma solidity ^0.8.19;
 import "../mock/Setup.sol";
 import "../../src/contracts/libraries/UniswapV2Library.sol";
 
-// forge test --mc ArbitrageTest -vv
-// forge test --mc --fork-url https://mainnet.infura.io/v3/API_KEY -vv
+// forge test --mc ArbitrageTest -vv --ffi
+// forge test --mc --fork-url https://mainnet.infura.io/v3/API_KEY -vv --ffi
 
 contract ArbitrageTest is Setup {
     function testArbitrage() public view {

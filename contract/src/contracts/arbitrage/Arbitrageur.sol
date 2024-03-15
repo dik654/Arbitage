@@ -1,18 +1,19 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.19;
 
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../interfaces/IArbitrageur.sol";
-import "../interfaces/IERC20.sol";
 import "../interfaces/IUniswapV2Callee.sol";
 import "../interfaces/IUniswapV2Pair.sol";
 import "../interfaces/IUniswapV2Router02.sol";
 import "../libraries/UniswapV2Library.sol";
 
-contract Arbitrageur is IArbitrageur, IUniswapV2Callee {
-    address public owner;
+contract Arbitrageur is IArbitrageur, IUniswapV2Callee, Initializable, OwnableUpgradeable {
+    using SafeERC20 for IERC20;
     address public factory;
 
-    error AlreadyInitialized();
     error NoProfit();
 
     /**
@@ -21,44 +22,46 @@ contract Arbitrageur is IArbitrageur, IUniswapV2Callee {
      * @param   _owner  contract owner address
      * @param   _factory  uniswap v2 factory address
      */
-    function intialize(address _owner, address _factory) public {
-        if (owner != address(0)) {
-            revert AlreadyInitialized();
-        }
-        owner = _owner;
+    function initialize(address _owner, address _factory) public initializer {
+        __Ownable_init(_owner);
         factory = _factory;
     }
 
     /**
      * @notice  initiate arbitrage swap process
      * @dev     borrow asset from "swap function" to get arbitrage profit by uniswapV2Call callback process
-     * @param   _amountIn  asset amount to borrow
+     * @param   _amountBorrow  asset amount to borrow
      * @param   _path  arbitrage swap path
      */
     function arbitrage(
-        uint256 _amountIn,
+        uint256 _amountBorrow,
         address[] memory _path
-    ) public {
-        // -- arbitrage --
+    ) public onlyOwner {
         // getAmountsOut으로 차익거래 과정에서의 모든 amountOut 얻기
-        uint256[] memory amounts = UniswapV2Library.getAmountsOut(factory, _amountIn, _path);
-        // 차익 거래 실행에 앞서 getAmountsOut <= _amount + fee라면 revert(수익이 나지않는 경우 revert)
-        uint256 fee = (_amountIn * 3) / 997 + 1;
-        uint256 amountToRepay = _amountIn + fee;
+        uint256[] memory amounts = UniswapV2Library.getAmountsOut(factory, _amountBorrow, _path);
+        // 빌린 양을 바탕으로 uniswapV2Call에서 얼마나 갚아야하는지 계산
+        uint256 fee = (_amountBorrow * 3) / 997 + 1;
+        uint256 amountToRepay = _amountBorrow + fee;
+        // 만약 결과 개수가 초기 빌린 개수 + 0.3% fee보다 작거나 같다면
+        // 수익이 나지 않았으므로 revert
         if (amounts[_path.length - 1] - amountToRepay == 0) {
             revert NoProfit();
         }
-        // swap(0, amountOut, 콜백주소, uniswapV2Call에서 연속적으로 실행할 swap path bytes)
         address pair = UniswapV2Library.pairFor(factory, _path[0], _path[1]);
-        // 0, 1중 어떤게 path[1]인지 검사
         uint256 amount0Out;
         uint256 amount1Out;
+        // stack too deep 방지용 Local Scope
         {
         (address input, address output) = (_path[0], _path[1]);
         (address token0,) = UniswapV2Library.sortTokens(input, output);
         uint256 amountOut = amounts[1];
+        // 0, 1중 어떤게 path[1]인지 검사
+        // token0이 시작 토큰(_path[0])이라면 (시작 0, 다음 amountOut)
+        // amountOut은 빌리거나 제공한 토큰으로 교환한 토큰 개수
         (amount0Out, amount1Out) = input == token0 ? (uint256(0), amountOut) : (amountOut, uint256(0));
         }
+        // 차익교환 실행
+        // swap(0, amountOut, 콜백주소, uniswapV2Call에서 사용할 bytes 데이터)
         UniswapV2Pair(pair).swap(amount0Out, amount1Out, address(this), encodeData(pair, amountToRepay, amounts, _path));
     }
 
@@ -83,8 +86,11 @@ contract Arbitrageur is IArbitrageur, IUniswapV2Callee {
         }
         _swap(newAmounts, newPath, address(this));
         // 차익 거래 실행 후 _amount + fee만큼 arbitrage에서 빌린 pool에 갚기
-        IERC20(path[0]).transfer(pair, amountToRepay);
+        IERC20(path[0]).safeTransfer(pair, amountToRepay);
         // RewardDistributor로 차익 전송
+        // uint256 profitAmount = IERC20(path[0]).balanceOf(this(address));
+        // TODO path[0] 토큰을 rewardToken으로 사용하는 rewardDistributor 주소를 리턴하는 getRewardDistributor함수
+        // IRewardDistributor(getRewardDistributor(path[0])).notifyReward(profitAmount);
     }
 
     /**
@@ -106,7 +112,6 @@ contract Arbitrageur is IArbitrageur, IUniswapV2Callee {
             );
         }
     }
-
 
     /**
      * @notice  encode necessary data
