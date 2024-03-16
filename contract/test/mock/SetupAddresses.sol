@@ -54,14 +54,16 @@ contract SetupAddresses is Test {
             EARTH = new TestERC20("EARTH", "EARTH", 6);
             REWARD = new TestERC20("REWARD", "REWARD", 18);
             
-            address arbitrageurProxy = Upgrades.deployUUPSProxy(
+            address arbitrageurProxy = Upgrades.deployTransparentProxy(
                 "Arbitrageur.sol",
+                deployer,
                 abi.encodeCall(Arbitrageur.initialize, (deployer, address(factory)))
             );
             arbitrageur = Arbitrageur(arbitrageurProxy);
-            address rewardDistributorProxy = Upgrades.deployUUPSProxy(
+            address rewardDistributorProxy = Upgrades.deployTransparentProxy(
                 "RewardDistributor.sol",
-                abi.encodeCall(RewardDistributor.initialize, (deployer))
+                deployer,
+                abi.encodeCall(RewardDistributor.initialize, (deployer, address(REWARD)))
             );
             rewardDistributor = RewardDistributor(rewardDistributorProxy);
         }

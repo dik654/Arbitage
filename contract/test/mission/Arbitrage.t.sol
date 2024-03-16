@@ -41,7 +41,7 @@ contract ArbitrageTest is Setup {
         console.log("WIND EARTH : ", amountA, " ", amountB);
     }
 
-    function testFlashswap() public {
+    function test_Flashswap() public {
         vm.startPrank(deployer);
         address[] memory path = new address[](4);
         path[0] = address(FIRE);

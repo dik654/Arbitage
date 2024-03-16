@@ -62,7 +62,7 @@ contract SetupAddresses is Test {
             address rewardDistributorProxy = Upgrades.deployTransparentProxy(
                 "RewardDistributor.sol",
                 msg.sender,
-                abi.encodeCall(RewardDistributor.initialize, (msg.sender))
+                abi.encodeCall(RewardDistributor.initialize, (msg.sender, address(REWARD)))
             );
             rewardDistributor = RewardDistributor(rewardDistributorProxy);
         }

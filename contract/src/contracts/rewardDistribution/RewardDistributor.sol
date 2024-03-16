@@ -37,8 +37,9 @@ contract RewardDistributor is IRewardDistributor, Initializable, OwnableUpgradea
      * @dev     set variables instead of constructor on UUPS
      * @param   _owner  contract owner
      */
-    function initialize(address _owner) public initializer {
+    function initialize(address _owner, address _rewardToken) public initializer {
         __Ownable_init(_owner);
+        rewardToken = _rewardToken;
     }
 
     /**
@@ -90,7 +91,7 @@ contract RewardDistributor is IRewardDistributor, Initializable, OwnableUpgradea
      * @dev     Rewards that are not divided by investor length will be added to remainingReward
      * @param   _amount  increased rewards amount
      */
-    function notifyReward(uint256 _amount) external onlyOwner {
+    function notifyReward(uint256 _amount) external {
         if (_amount == 0) {
             revert ZeroAmount();
         }

@@ -4,13 +4,34 @@ pragma solidity ^0.8.19;
 // import "../Setup.sol";
 import "../mock/Setup.sol";
 import "forge-std/console.sol";
+import "../../src/contracts/mock/DistributeMock.sol";
 
-// forge test --mc RewardDistributionTest -vv
+// forge test --mc RewardDistributionTest -vv --ffi
 // forge test --mc RewardDistributionTest --fork-url https://mainnet.infura.io/v3/API_KEY -vv
 
 contract RewardDistributionTest is Setup {
 
-    function testRewardDistributionSample() public view {
+    function test_RewardDistribution() public {
+        vm.startPrank(deployer);
+        DistributeMock distributeMock = new DistributeMock();
+        rewardDistributor.updateInvestorInfo(deployer, 10);
+        rewardDistributor.updateInvestorInfo(investor1, 20);
+        rewardDistributor.updateInvestorInfo(investor2, 30); 
+        rewardDistributor.updateInvestorInfo(investor3, 40);
+
+        IERC20(address(REWARD)).approve(address(distributeMock), 10000000 ether);
+        vm.stopPrank();
+
+        distributeMock.initiate(address(REWARD), deployer, address(rewardDistributor), 10000000 ether);
+        vm.prank(deployer);
+        rewardDistributor.claim();
+        vm.prank(investor1);
+        rewardDistributor.claim();
+        vm.prank(investor2);
+        rewardDistributor.claim();
+        vm.prank(investor3);
+        rewardDistributor.claim();
+
         console.log("==RewardDistribution Test ==");
         console.log("deployer : ", REWARD.balanceOf(deployer));
         console.log("investor1: ", REWARD.balanceOf(investor1));
