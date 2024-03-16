@@ -56,12 +56,12 @@ contract SetupAddresses is Test {
             
             address arbitrageurProxy = Upgrades.deployUUPSProxy(
                 "Arbitrageur.sol",
-                abi.encodeCall(Arbitrageur.initialize, (msg.sender, address(factory)))
+                abi.encodeCall(Arbitrageur.initialize, (deployer, address(factory)))
             );
             arbitrageur = Arbitrageur(arbitrageurProxy);
             address rewardDistributorProxy = Upgrades.deployUUPSProxy(
                 "RewardDistributor.sol",
-                abi.encodeCall(RewardDistributor.initialize, (msg.sender))
+                abi.encodeCall(RewardDistributor.initialize, (deployer))
             );
             rewardDistributor = RewardDistributor(rewardDistributorProxy);
         }

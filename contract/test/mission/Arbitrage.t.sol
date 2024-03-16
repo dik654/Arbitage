@@ -3,9 +3,10 @@ pragma solidity ^0.8.19;
 
 // import "../Setup.sol";
 import "../mock/Setup.sol";
+import "forge-std/console.sol";
 import "../../src/contracts/libraries/UniswapV2Library.sol";
 
-// forge test --mc ArbitrageTest -vv --ffi
+// forge clean && forge test --mc ArbitrageTest -vv --ffi
 // forge test --mc --fork-url https://mainnet.infura.io/v3/API_KEY -vv --ffi
 
 contract ArbitrageTest is Setup {
@@ -42,13 +43,13 @@ contract ArbitrageTest is Setup {
 
     function testFlashswap() public {
         vm.startPrank(deployer);
-        IERC20(address(FIRE)).approve(address(arbitrageur), 10000 ether);
-        IERC20(address(WETH)).approve(address(arbitrageur), 10000 ether);
-        address pair = UniswapV2Library.pairFor(address(factory), address(FIRE), address(WETH));
-        address[] memory path = new address[](2);
+        address[] memory path = new address[](4);
         path[0] = address(FIRE);
-        path[1] = address(WETH);
-        // arbitrageur.arbitrage(amountIn, path);
+        path[1] = address(WATER);
+        path[2] = address(WETH);
+        path[3] = address(FIRE);
+        arbitrageur.arbitrage(283 ether, path);
+        console.log("arbitrage:%d", IERC20(address(FIRE)).balanceOf(address(arbitrageur)));
         vm.stopPrank();
     }
 }
