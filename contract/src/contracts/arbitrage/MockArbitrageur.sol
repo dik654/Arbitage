@@ -8,9 +8,9 @@ import "../interfaces/IArbitrageur.sol";
 import "../interfaces/IUniswapV2Callee.sol";
 import "../interfaces/IUniswapV2Pair.sol";
 import "../interfaces/IUniswapV2Router02.sol";
-import "../libraries/UniswapV2Library.sol";
+import "../libraries/MockUniswapV2Library.sol";
 
-contract Arbitrageur is IArbitrageur, IUniswapV2Callee, Initializable, OwnableUpgradeable {
+contract MockArbitrageur is IArbitrageur, IUniswapV2Callee, Initializable, OwnableUpgradeable {
     using SafeERC20 for IERC20;
     address public factory;
 
@@ -38,7 +38,7 @@ contract Arbitrageur is IArbitrageur, IUniswapV2Callee, Initializable, OwnableUp
         address[] memory _path
     ) public onlyOwner {
         // getAmountsOut으로 차익거래 과정에서의 모든 amountOut 얻기
-        uint256[] memory amounts = UniswapV2Library.getAmountsOut(factory, _amountBorrow, _path);
+        uint256[] memory amounts = MockUniswapV2Library.getAmountsOut(factory, _amountBorrow, _path);
         for (uint256 i = 0; i < amounts.length; i++) {
             console.logUint(amounts[i]);
         }
@@ -51,13 +51,13 @@ contract Arbitrageur is IArbitrageur, IUniswapV2Callee, Initializable, OwnableUp
         if (amounts[_path.length - 1] <= amountToRepay) {
             revert NoProfit();
         }
-        address pair = UniswapV2Library.pairFor(factory, _path[0], _path[1]);
+        address pair = MockUniswapV2Library.pairFor(factory, _path[0], _path[1]);
         uint256 amount0Out;
         uint256 amount1Out;
         // stack too deep 방지용 Local Scope
         {
         (address input, address output) = (_path[0], _path[1]);
-        (address token0,) = UniswapV2Library.sortTokens(input, output);
+        (address token0,) = MockUniswapV2Library.sortTokens(input, output);
         uint256 amountOut = amounts[1];
         // 0, 1중 어떤게 path[1]인지 검사
         // token0이 시작 토큰(_path[0])이라면 (시작 0, 다음 amountOut)
@@ -89,7 +89,7 @@ contract Arbitrageur is IArbitrageur, IUniswapV2Callee, Initializable, OwnableUp
             newPath[i - 1] = path[i];
         }
         IERC20(newPath[0]).safeTransfer(
-            UniswapV2Library.pairFor(factory, newPath[0], newPath[1]), newAmounts[0]
+            MockUniswapV2Library.pairFor(factory, newPath[0], newPath[1]), newAmounts[0]
         );
         _swap(newAmounts, newPath, address(this));
         // 차익 거래 실행 후 _amount + fee만큼 arbitrage에서 빌린 pool에 갚기
@@ -111,11 +111,11 @@ contract Arbitrageur is IArbitrageur, IUniswapV2Callee, Initializable, OwnableUp
     function _swap(uint[] memory amounts, address[] memory path, address _to) internal {
         for (uint i; i < path.length - 1; i++) {
             (address input, address output) = (path[i], path[i + 1]);
-            (address token0,) = UniswapV2Library.sortTokens(input, output);
+            (address token0,) = MockUniswapV2Library.sortTokens(input, output);
             uint amountOut = amounts[i + 1];
             (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), amountOut) : (amountOut, uint(0));
-            address to = i < path.length - 2 ? UniswapV2Library.pairFor(factory, output, path[i + 2]) : _to;
-            IUniswapV2Pair(UniswapV2Library.pairFor(factory, input, output)).swap(
+            address to = i < path.length - 2 ? MockUniswapV2Library.pairFor(factory, output, path[i + 2]) : _to;
+            IUniswapV2Pair(MockUniswapV2Library.pairFor(factory, input, output)).swap(
                 amount0Out, amount1Out, to, new bytes(0)
             );
         }

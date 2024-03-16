@@ -3,10 +3,11 @@ pragma solidity ^0.8.19;
 
 import "../Setup.sol";
 import "forge-std/console.sol";
+import "../../../src/contracts/libraries/MockUniswapV2Library.sol";
 
-// forge clean && forge test --mc ArbitrageTest --fork-url https://mainnet.infura.io/v3/API_KEY -vv --ffi
+// forge clean && forge test --mc ArbitrageMockTest -vv --ffi
 
-contract ArbitrageTest is Setup {
+contract ArbitrageMockTest is Setup {
     function testArbitrage() public view {
         console.log("ETH  : ", balance(user, address(0)));
         console.log("FIRE  : ", balance(user, address(FIRE)));
@@ -16,25 +17,25 @@ contract ArbitrageTest is Setup {
     }
 
     function testGetReserves() public view {
-        (uint256 amountA, uint256 amountB) = UniswapV2Library.getReserves(address(factory), address(FIRE), address(WETH));
+        (uint256 amountA, uint256 amountB) = MockUniswapV2Library.getReserves(address(factory), address(FIRE), address(WETH));
         console.log("FIRE WETH : ", amountA, " ", amountB);
-        (amountA, amountB) = UniswapV2Library.getReserves(address(factory), address(WATER), address(WETH));
+        (amountA, amountB) = MockUniswapV2Library.getReserves(address(factory), address(WATER), address(WETH));
         console.log("WATER WETH : ", amountA, " ", amountB);
-        (amountA, amountB) = UniswapV2Library.getReserves(address(factory), address(WIND), address(WETH));
+        (amountA, amountB) = MockUniswapV2Library.getReserves(address(factory), address(WIND), address(WETH));
         console.log("WIND WETH : ", amountA, " ", amountB);
-        (amountA, amountB) = UniswapV2Library.getReserves(address(factory), address(EARTH), address(WETH));
+        (amountA, amountB) = MockUniswapV2Library.getReserves(address(factory), address(EARTH), address(WETH));
         console.log("EARTH WETH : ", amountA, " ", amountB);
-        (amountA, amountB) = UniswapV2Library.getReserves(address(factory), address(FIRE), address(WATER));
+        (amountA, amountB) = MockUniswapV2Library.getReserves(address(factory), address(FIRE), address(WATER));
         console.log("FIRE WATER : ", amountA, " ", amountB);
-        (amountA, amountB) = UniswapV2Library.getReserves(address(factory), address(FIRE), address(WIND));
+        (amountA, amountB) = MockUniswapV2Library.getReserves(address(factory), address(FIRE), address(WIND));
         console.log("FIRE WIND : ", amountA, " ", amountB);
-        (amountA, amountB) = UniswapV2Library.getReserves(address(factory), address(FIRE), address(EARTH));
+        (amountA, amountB) = MockUniswapV2Library.getReserves(address(factory), address(FIRE), address(EARTH));
         console.log("FIRE EARTH : ", amountA, " ", amountB);
-        (amountA, amountB) = UniswapV2Library.getReserves(address(factory), address(WATER), address(WIND));
+        (amountA, amountB) = MockUniswapV2Library.getReserves(address(factory), address(WATER), address(WIND));
         console.log("WATER WIND : ", amountA, " ", amountB);
-        (amountA, amountB) = UniswapV2Library.getReserves(address(factory), address(WATER), address(EARTH));
+        (amountA, amountB) = MockUniswapV2Library.getReserves(address(factory), address(WATER), address(EARTH));
         console.log("WATER EARTH : ", amountA, " ", amountB);
-        (amountA, amountB) = UniswapV2Library.getReserves(address(factory), address(WIND), address(EARTH));
+        (amountA, amountB) = MockUniswapV2Library.getReserves(address(factory), address(WIND), address(EARTH));
         console.log("WIND EARTH : ", amountA, " ", amountB);
     }
 

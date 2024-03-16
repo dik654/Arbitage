@@ -9,7 +9,7 @@ import "../../src/contracts/uniswap/UniswapV2Factory.sol";
 import "../../src/contracts/uniswap/UniswapV2Router02.sol";
 import "../../src/contracts/mock/TestERC20.sol";
 import "../../src/contracts/mock/WETH9.sol";
-import "../../src/contracts/arbitrage/Arbitrageur.sol";
+import "../../src/contracts/arbitrage/MockArbitrageur.sol";
 import "../../src/contracts/rewardDistribution/RewardDistributor.sol";
 import "../../src/contracts/interfaces/IUniswapV2Pair.sol";
 import "../../src/contracts/interfaces/IWETH.sol";
@@ -24,7 +24,7 @@ contract SetupAddresses is Test {
     UniswapV2Factory factory;
     UniswapV2Router02 router02;
 
-    Arbitrageur arbitrageur;
+    MockArbitrageur arbitrageur;
     RewardDistributor rewardDistributor;
 
     WETH9 WETH;
@@ -33,7 +33,6 @@ contract SetupAddresses is Test {
     TestERC20 WIND;
     TestERC20 EARTH;
     TestERC20 REWARD;
-
 
     function setupAddresses() internal {
         deployer = address(0xdeff);
@@ -55,11 +54,11 @@ contract SetupAddresses is Test {
             REWARD = new TestERC20("REWARD", "REWARD", 18);
             
             address arbitrageurProxy = Upgrades.deployTransparentProxy(
-                "Arbitrageur.sol",
+                "MockArbitrageur.sol",
                 deployer,
-                abi.encodeCall(Arbitrageur.initialize, (deployer, address(factory)))
+                abi.encodeCall(MockArbitrageur.initialize, (deployer, address(factory)))
             );
-            arbitrageur = Arbitrageur(arbitrageurProxy);
+            arbitrageur = MockArbitrageur(arbitrageurProxy);
             address rewardDistributorProxy = Upgrades.deployTransparentProxy(
                 "RewardDistributor.sol",
                 deployer,

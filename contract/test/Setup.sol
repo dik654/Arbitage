@@ -17,7 +17,6 @@ contract Setup is Test, SetupAddresses {
         _setupSnapshotId = vm.snapshot();
     }
 
-
     function _addLiquidity() private {
         deal(deployer, 10000000 ether);
         vm.startPrank(deployer);

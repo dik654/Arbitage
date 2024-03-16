@@ -55,14 +55,14 @@ contract SetupAddresses is Test {
             
             address arbitrageurProxy = Upgrades.deployTransparentProxy(
                 "Arbitrageur.sol",
-                msg.sender,
-                abi.encodeCall(Arbitrageur.initialize, (msg.sender, address(factory)))
+                deployer,
+                abi.encodeCall(Arbitrageur.initialize, (deployer, address(factory)))
             );
             arbitrageur = Arbitrageur(arbitrageurProxy);
             address rewardDistributorProxy = Upgrades.deployTransparentProxy(
                 "RewardDistributor.sol",
-                msg.sender,
-                abi.encodeCall(RewardDistributor.initialize, (msg.sender, address(REWARD)))
+                deployer,
+                abi.encodeCall(RewardDistributor.initialize, (deployer, address(REWARD)))
             );
             rewardDistributor = RewardDistributor(rewardDistributorProxy);
         }

@@ -3,11 +3,11 @@ pragma solidity ^0.8.19;
 
 import "../Setup.sol";
 import "forge-std/console.sol";
-import "../../src/contracts/mock/DistributeMock.sol";
+import "../../../src/contracts/mock/DistributeMock.sol";
 
-// forge test --mc RewardDistributionTest --fork-url https://mainnet.infura.io/v3/API_KEY -vv -ffi
+// forge test --mc MockRewardDistributionMockTest -vv --ffi
 
-contract RewardDistributionTest is Setup {
+contract RewardDistributionMockTest is Setup {
 
     function test_RewardDistribution() public {
         vm.startPrank(deployer);
