@@ -94,4 +94,12 @@ contract RewardDistributionTest is Setup {
         );
         distributeMock.initiate(address(REWARD), deployer, address(rewardDistributor), 0);
     }
+
+    function test_NotifyRewardPermit() public {
+
+    }
+
+    function test_NotifyRewardPermitNotImplementPermit() public {
+
+    }
 }

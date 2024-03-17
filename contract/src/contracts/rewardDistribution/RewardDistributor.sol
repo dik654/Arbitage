@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import "../interfaces/IRewardDistributor.sol";
 
 contract RewardDistributor is IRewardDistributor, Initializable, OwnableUpgradeable {
@@ -24,6 +25,7 @@ contract RewardDistributor is IRewardDistributor, Initializable, OwnableUpgradea
     error OnlyInvestor();
     error OnlyAuthorizedContract();
     error ZeroAmount();
+    error NotImplementPermit(address);
 
     modifier onlyInvestor {
         (bool included, ) = _allocMap.tryGet(msg.sender);
@@ -108,6 +110,39 @@ contract RewardDistributor is IRewardDistributor, Initializable, OwnableUpgradea
         distributeReward(_amount);
         IERC20(rewardToken).safeTransferFrom(msg.sender, address(this), _amount);
         emit IncreasedReward(_amount);
+    }
+
+    /**
+     * @notice  owner notify rewards added on this contract with permit
+     * @dev     distribute rewards to investors and emit event with permit
+     * @dev     Rewards that are not divided by investor length will be added to remainingReward
+     * @param   _amount  increased rewards amount
+     * @param   _owner  param for permit
+     * @param   _spender  param for permit
+     * @param   _value  param for permit
+     * @param   _deadline  param for permit
+     * @param   _v  param for permit
+     * @param   _r  param for permit
+     * @param   _s  param for permit
+     */
+    function notifyRewardPermit(
+        uint256 _amount,
+        address _owner,
+        address _spender,
+        uint256 _value,
+        uint256 _deadline,
+        uint8 _v,
+        bytes32 _r,
+        bytes32 _s
+    ) external onlyAuthorizedContract {
+        if (_amount == 0) revert ZeroAmount();
+        distributeReward(_amount);
+        try IERC20Permit(rewardToken).permit(_owner, _spender, _value, _deadline, _v, _r, _s) {
+            IERC20(rewardToken).safeTransferFrom(msg.sender, address(this), _amount);
+            emit IncreasedReward(_amount);
+        } catch {
+            revert NotImplementPermit(rewardToken);
+        }
     }
 
     /**
