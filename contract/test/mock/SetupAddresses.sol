@@ -12,6 +12,7 @@ import "../../src/contracts/mock/TestERC20.sol";
 import "../../src/contracts/mock/WETH9.sol";
 import "../../src/contracts/arbitrage/MockArbitrageur.sol";
 import "../../src/contracts/rewardDistribution/RewardDistributor.sol";
+import "../../src/contracts/mock/DistributeMock.sol";
 import "../../src/contracts/interfaces/IUniswapV2Pair.sol";
 import "../../src/contracts/interfaces/IWETH.sol";
     
@@ -27,6 +28,7 @@ contract SetupAddresses is Test {
 
     MockArbitrageur arbitrageur;
     RewardDistributor rewardDistributor;
+    DistributeMock distributeMock;
 
     WETH9 WETH;
     TestERC20 FIRE;
@@ -53,6 +55,8 @@ contract SetupAddresses is Test {
             WIND = new TestERC20("WIND", "WIND", 18);
             EARTH = new TestERC20("EARTH", "EARTH", 6);
             REWARD = new TestERC20("REWARD", "REWARD", 18);
+
+            distributeMock = new DistributeMock();
             
             address arbitrageurProxy = Upgrades.deployTransparentProxy(
                 "MockArbitrageur.sol",

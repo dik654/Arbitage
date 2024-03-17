@@ -8,7 +8,7 @@ contract DistributeMock {
     using SafeERC20 for IERC20;
 
     function initiate(address _tokenAddress, address _from, address _rewardDistributor, uint256 _amount) public {
-        IERC20(_tokenAddress).safeTransferFrom(_from, _rewardDistributor, _amount);
+        IERC20(_tokenAddress).approve(_rewardDistributor, _amount);
         IRewardDistributor(_rewardDistributor).notifyReward(_amount);
     }
 }

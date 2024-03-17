@@ -43,9 +43,7 @@ contract Arbitrageur is IArbitrageur, IUniswapV2Callee, Initializable, OwnableUp
         uint256 amountToRepay = _amountBorrow + fee;
         // 만약 결과 개수가 초기 빌린 개수 + 0.3% fee보다 작거나 같다면
         // 수익이 나지 않았으므로 revert
-        if (amounts[_path.length - 1] <= amountToRepay) {
-            revert NoProfit();
-        }
+        if (amounts[_path.length - 1] <= amountToRepay) revert NoProfit();
         address pair = UniswapV2Library.pairFor(factory, _path[0], _path[1]);
         uint256 amount0Out;
         uint256 amount1Out;

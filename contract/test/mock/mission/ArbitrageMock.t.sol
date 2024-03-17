@@ -8,18 +8,6 @@ import "../../../src/contracts/libraries/MockUniswapV2Library.sol";
 // forge clean && forge test --mc ArbitrageMockTest -vv --ffi
 
 contract ArbitrageMockTest is Setup {
-    function testFail_AlreadyInitialized() public {
-        
-    } 
-
-    function testArbitrage() public view {
-        console.log("ETH  : ", balance(user, address(0)));
-        console.log("FIRE  : ", balance(user, address(FIRE)));
-        console.log("WATER : ", balance(user, address(WATER)));
-        console.log("WIND  : ", balance(user, address(WIND)));
-        console.log("EARTH : ", balance(user, address(EARTH)));
-    }
-
     function test_GetReserves() public view {
         (uint256 amountA, uint256 amountB) = MockUniswapV2Library.getReserves(address(factory), address(FIRE), address(WETH));
         console.log("FIRE WETH : ", amountA, " ", amountB);
@@ -43,7 +31,7 @@ contract ArbitrageMockTest is Setup {
         console.log("WIND EARTH : ", amountA, " ", amountB);
     }
 
-    function test_Flashswap() public {
+    function test_Arbitrage() public {
         vm.startPrank(deployer);
         address[] memory path = new address[](4);
         path[0] = address(FIRE);
@@ -51,21 +39,55 @@ contract ArbitrageMockTest is Setup {
         path[2] = address(WETH);
         path[3] = address(FIRE);
         arbitrageur.arbitrage(283 ether, path);
+        console.log("ETH  : ", balance(user, address(0)));
+        console.log("FIRE  : ", balance(user, address(FIRE)));
+        console.log("WATER : ", balance(user, address(WATER)));
+        console.log("WIND  : ", balance(user, address(WIND)));
+        console.log("EARTH : ", balance(user, address(EARTH)));
         console.log("arbitrage:%d", IERC20(address(FIRE)).balanceOf(address(arbitrageur)));
         vm.stopPrank();
     }
 
-    function testFail_OnlyOwner() public {
+    function test_AlreadyInitialized() public {
+        vm.prank(deployer);
+        vm.expectRevert(
+            abi.encodeWithSignature("InvalidInitialization()")
+        ); 
+        arbitrageur.initialize(deployer, address(factory));
+    } 
 
+    function test_OnlyOwner() public {
+        address[] memory path = new address[](4);
+        path[0] = address(FIRE);
+        path[1] = address(WATER);
+        path[2] = address(WETH);
+        path[3] = address(FIRE);
+        vm.expectRevert(
+            abi.encodeWithSignature("OwnableUnauthorizedAccount(address)", user)
+        );
+        vm.prank(user);
+        arbitrageur.arbitrage(283 ether, path);
     }
 
-    function testFail_NoProfit() public {
-        
+    function test_NoProfit() public {
+       vm.startPrank(deployer);
+        address[] memory path = new address[](4);
+        path[0] = address(FIRE);
+        path[1] = address(WATER);
+        path[2] = address(WETH);
+        path[3] = address(FIRE);
+        vm.expectRevert(
+            abi.encodeWithSignature("NoProfit()")
+        );
+        arbitrageur.arbitrage(100000 ether, path);
+        vm.stopPrank(); 
     }
-
 
     function testFail_WrongPath() public {
-
+        vm.startPrank(deployer);
+        address[] memory path = new address[](1);
+        path[0] = address(FIRE);
+        arbitrageur.arbitrage(283 ether, path);
+        vm.stopPrank();
     }
-
 }

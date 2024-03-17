@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../src/contracts/mock/TestERC20.sol";
 import "../src/contracts/arbitrage/Arbitrageur.sol";
 import "../src/contracts/rewardDistribution/RewardDistributor.sol";
+import "../src/contracts/mock/DistributeMock.sol";
 import "../src/contracts/interfaces/IUniswapV2Factory.sol";
 import "../src/contracts/interfaces/IUniswapV2Router02.sol";
 import "../src/contracts/interfaces/IUniswapV2Pair.sol";
@@ -26,6 +27,7 @@ contract SetupAddresses is Test {
 
     Arbitrageur arbitrageur;
     RewardDistributor rewardDistributor;
+    DistributeMock distributeMock;
 
     IERC20 WETH;
     TestERC20 FIRE;
@@ -53,6 +55,8 @@ contract SetupAddresses is Test {
             WIND = new TestERC20("WIND", "WIND", 18);
             EARTH = new TestERC20("EARTH", "EARTH", 6);
             REWARD = new TestERC20("REWARD", "REWARD", 18);
+
+            distributeMock = new DistributeMock();
             
             address arbitrageurProxy = Upgrades.deployTransparentProxy(
                 "Arbitrageur.sol",

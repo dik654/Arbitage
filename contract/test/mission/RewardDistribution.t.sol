@@ -2,7 +2,6 @@
 pragma solidity ^0.8.19;
 
 import "../Setup.sol";
-import "../../src/contracts/mock/DistributeMock.sol";
 
 // forge test --mc RewardDistributionTest --fork-url https://mainnet.infura.io/v3/API_KEY -vv -ffi
 
@@ -10,13 +9,13 @@ contract RewardDistributionTest is Setup {
 
     function test_RewardDistribution() public {
         vm.startPrank(deployer);
-        DistributeMock distributeMock = new DistributeMock();
         rewardDistributor.updateInvestorInfo(deployer, 10);
         rewardDistributor.updateInvestorInfo(investor1, 20);
         rewardDistributor.updateInvestorInfo(investor2, 30); 
         rewardDistributor.updateInvestorInfo(investor3, 40);
 
-        IERC20(address(REWARD)).approve(address(distributeMock), 10000000 ether);
+        rewardDistributor.addAuthorizedContract(address(distributeMock));
+        IERC20(address(REWARD)).transfer(address(distributeMock), 10000000 ether);
         vm.stopPrank();
 
         distributeMock.initiate(address(REWARD), deployer, address(rewardDistributor), 10000000 ether);
@@ -34,5 +33,65 @@ contract RewardDistributionTest is Setup {
         console.log("investor1: ", REWARD.balanceOf(investor1));
         console.log("investor2: ", REWARD.balanceOf(investor2));
         console.log("investor3: ", REWARD.balanceOf(investor3));
+    }
+
+    function test_AlreadyInitialized() public {
+        vm.prank(deployer);
+        vm.expectRevert(
+            abi.encodeWithSignature("InvalidInitialization()")
+        ); 
+        rewardDistributor.initialize(deployer, address(REWARD));
+    }
+
+    function test_AddAuthorizedContractOnlyOwner() public {
+        vm.expectRevert(
+            abi.encodeWithSignature("OwnableUnauthorizedAccount(address)", user)
+        );
+        vm.prank(user);
+        rewardDistributor.addAuthorizedContract(address(distributeMock));
+    }
+
+    function test_RemoveAuthorizedContractOnlyOwner() public {
+        vm.prank(deployer);
+        rewardDistributor.addAuthorizedContract(address(distributeMock));
+        vm.expectRevert(
+            abi.encodeWithSignature("OwnableUnauthorizedAccount(address)", user)
+        );
+        vm.prank(user);
+        rewardDistributor.removeAuthorizedContract(address(distributeMock));
+    }
+
+    function test_UpdateInvestorInfoOnlyOwner() public {
+        vm.expectRevert(
+            abi.encodeWithSignature("OwnableUnauthorizedAccount(address)", user)
+        );
+        vm.prank(user);
+        rewardDistributor.updateInvestorInfo(investor1, 10); 
+    }
+
+    function test_DistributeRemainingOnlyOwner() public {
+        vm.expectRevert(
+            abi.encodeWithSignature("OwnableUnauthorizedAccount(address)", user)
+        );
+        vm.prank(user); 
+        rewardDistributor.distributeRemaining();
+    }
+
+    function test_NotifyRewardOnlyAuthorizedContract() public {
+        vm.prank(deployer);
+        IERC20(address(REWARD)).transfer(address(distributeMock), 10000000 ether);
+        vm.expectRevert(
+            abi.encodeWithSignature("OnlyAuthorizedContract()")
+        );
+        distributeMock.initiate(address(REWARD), deployer, address(rewardDistributor), 10000000 ether);
+    }
+
+    function test_NotifyRewardZeroAmount() public {
+        vm.prank(deployer);
+        rewardDistributor.addAuthorizedContract(address(distributeMock));
+        vm.expectRevert(
+            abi.encodeWithSignature("ZeroAmount()")
+        );
+        distributeMock.initiate(address(REWARD), deployer, address(rewardDistributor), 0);
     }
 }

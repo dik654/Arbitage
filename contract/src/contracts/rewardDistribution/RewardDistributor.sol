@@ -9,26 +9,30 @@ import "../interfaces/IRewardDistributor.sol";
 
 contract RewardDistributor is IRewardDistributor, Initializable, OwnableUpgradeable {
     using SafeERC20 for IERC20;
+    using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableMap for EnumerableMap.AddressToUintMap;
 
     address public rewardToken;
     uint256 public remainingReward;
     uint256 public totalAllocPoint;
     mapping(address => uint256) userReward;
+    EnumerableSet.AddressSet private _addressSet;
     EnumerableMap.AddressToUintMap private _allocMap;
 
     event IncreasedReward(uint256 amount);
 
-    error AlreadyInitialized();
     error OnlyInvestor();
+    error OnlyAuthorizedContract();
     error ZeroAmount();
-    error FailToSendReward();
 
     modifier onlyInvestor {
         (bool included, ) = _allocMap.tryGet(msg.sender);
-        if (!included) {
-            revert OnlyInvestor();
-        }
+        if (!included) revert OnlyInvestor();
+        _;
+    }
+
+    modifier onlyAuthorizedContract {
+        if (!_addressSet.contains(msg.sender)) revert OnlyAuthorizedContract();
         _;
     }
 
@@ -40,6 +44,14 @@ contract RewardDistributor is IRewardDistributor, Initializable, OwnableUpgradea
     function initialize(address _owner, address _rewardToken) public initializer {
         __Ownable_init(_owner);
         rewardToken = _rewardToken;
+    }
+
+    function addAuthorizedContract(address _address) public onlyOwner returns (bool) {
+        return _addressSet.add(_address);
+    }
+
+    function removeAuthorizedContract(address _address) public onlyOwner returns (bool) {
+        return _addressSet.remove(_address);
     }
 
     /**
@@ -91,11 +103,10 @@ contract RewardDistributor is IRewardDistributor, Initializable, OwnableUpgradea
      * @dev     Rewards that are not divided by investor length will be added to remainingReward
      * @param   _amount  increased rewards amount
      */
-    function notifyReward(uint256 _amount) external {
-        if (_amount == 0) {
-            revert ZeroAmount();
-        }
+    function notifyReward(uint256 _amount) external onlyAuthorizedContract {
+        if (_amount == 0) revert ZeroAmount();
         distributeReward(_amount);
+        IERC20(rewardToken).safeTransferFrom(msg.sender, address(this), _amount);
         emit IncreasedReward(_amount);
     }
 
