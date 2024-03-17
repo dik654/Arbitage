@@ -8,6 +8,10 @@ import "../../../src/contracts/libraries/MockUniswapV2Library.sol";
 // forge clean && forge test --mc ArbitrageMockTest -vv --ffi
 
 contract ArbitrageMockTest is Setup {
+    function testFail_AlreadyInitialized() public {
+        
+    } 
+
     function testArbitrage() public view {
         console.log("ETH  : ", balance(user, address(0)));
         console.log("FIRE  : ", balance(user, address(FIRE)));
@@ -16,7 +20,7 @@ contract ArbitrageMockTest is Setup {
         console.log("EARTH : ", balance(user, address(EARTH)));
     }
 
-    function testGetReserves() public view {
+    function test_GetReserves() public view {
         (uint256 amountA, uint256 amountB) = MockUniswapV2Library.getReserves(address(factory), address(FIRE), address(WETH));
         console.log("FIRE WETH : ", amountA, " ", amountB);
         (amountA, amountB) = MockUniswapV2Library.getReserves(address(factory), address(WATER), address(WETH));
@@ -50,4 +54,18 @@ contract ArbitrageMockTest is Setup {
         console.log("arbitrage:%d", IERC20(address(FIRE)).balanceOf(address(arbitrageur)));
         vm.stopPrank();
     }
+
+    function testFail_OnlyOwner() public {
+
+    }
+
+    function testFail_NoProfit() public {
+        
+    }
+
+
+    function testFail_WrongPath() public {
+
+    }
+
 }

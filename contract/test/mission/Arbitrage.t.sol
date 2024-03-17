@@ -15,7 +15,7 @@ contract ArbitrageTest is Setup {
         console.log("EARTH : ", balance(user, address(EARTH)));
     }
 
-    function testGetReserves() public view {
+    function test_GetReserves() public view {
         (uint256 amountA, uint256 amountB) = UniswapV2Library.getReserves(address(factory), address(FIRE), address(WETH));
         console.log("FIRE WETH : ", amountA, " ", amountB);
         (amountA, amountB) = UniswapV2Library.getReserves(address(factory), address(WATER), address(WETH));

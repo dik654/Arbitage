@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.19;
-import "forge-std/console.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -39,13 +38,9 @@ contract Arbitrageur is IArbitrageur, IUniswapV2Callee, Initializable, OwnableUp
     ) public onlyOwner {
         // getAmountsOut으로 차익거래 과정에서의 모든 amountOut 얻기
         uint256[] memory amounts = UniswapV2Library.getAmountsOut(factory, _amountBorrow, _path);
-        for (uint256 i = 0; i < amounts.length; i++) {
-            console.logUint(amounts[i]);
-        }
         // 빌린 양을 바탕으로 uniswapV2Call에서 얼마나 갚아야하는지 계산
         uint256 fee = (_amountBorrow * 3) / 997 + 1;
         uint256 amountToRepay = _amountBorrow + fee;
-        console.log("repay:%d", amountToRepay);
         // 만약 결과 개수가 초기 빌린 개수 + 0.3% fee보다 작거나 같다면
         // 수익이 나지 않았으므로 revert
         if (amounts[_path.length - 1] <= amountToRepay) {
@@ -94,7 +89,6 @@ contract Arbitrageur is IArbitrageur, IUniswapV2Callee, Initializable, OwnableUp
         _swap(newAmounts, newPath, address(this));
         // 차익 거래 실행 후 _amount + fee만큼 arbitrage에서 빌린 pool에 갚기
         IERC20(path[0]).safeTransfer(pair, amountToRepay);
-        console.log("pair:%s", pair);
         // RewardDistributor로 차익 전송
         // uint256 profitAmount = IERC20(path[0]).balanceOf(this(address));
         // TODO path[0] 토큰을 rewardToken으로 사용하는 rewardDistributor 주소를 리턴하는 getRewardDistributor함수

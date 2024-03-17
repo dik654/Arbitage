@@ -2,7 +2,6 @@
 pragma solidity ^0.8.19;
 
 import "../Setup.sol";
-import "forge-std/console.sol";
 import "../../src/contracts/mock/DistributeMock.sol";
 
 // forge test --mc RewardDistributionTest --fork-url https://mainnet.infura.io/v3/API_KEY -vv -ffi

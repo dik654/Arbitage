@@ -3,6 +3,7 @@ pragma solidity ^0.8.19;
 
 import {Upgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 import "forge-std/Test.sol";
+import "forge-std/console.sol";
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../src/contracts/mock/TestERC20.sol";
