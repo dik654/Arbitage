@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL v3.0
 pragma solidity ^0.8.19;
-import "forge-std/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import '../interfaces/IUniswapV2Pair.sol';
 import './UniswapV2ERC20.sol';

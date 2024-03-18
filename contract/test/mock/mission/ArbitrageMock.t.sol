@@ -2,7 +2,6 @@
 pragma solidity ^0.8.19;
 
 import "../Setup.sol";
-import "forge-std/console.sol";
 import "../../../src/contracts/libraries/MockUniswapV2Library.sol";
 
 // forge clean && forge test --mc ArbitrageMockTest -vv --ffi

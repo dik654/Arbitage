@@ -2,7 +2,6 @@
 pragma solidity ^0.8.19;
 
 import "../Setup.sol";
-import "forge-std/console.sol";
 
 // forge clean && forge test --mc ArbitrageTest --fork-url https://mainnet.infura.io/v3/API_KEY -vv --ffi
 

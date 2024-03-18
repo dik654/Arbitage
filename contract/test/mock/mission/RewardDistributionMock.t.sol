@@ -2,7 +2,6 @@
 pragma solidity ^0.8.19;
 
 import "../Setup.sol";
-import "forge-std/console.sol";
 
 // forge test --mc RewardDistributionMockTest -vv --ffi
 
