@@ -6,14 +6,6 @@ import "../Setup.sol";
 // forge clean && forge test --mc ArbitrageTest --fork-url https://mainnet.infura.io/v3/API_KEY -vv --ffi
 
 contract ArbitrageTest is Setup {
-    function testArbitrage() public view {
-        console.log("ETH  : ", balance(user, address(0)));
-        console.log("FIRE  : ", balance(user, address(FIRE)));
-        console.log("WATER : ", balance(user, address(WATER)));
-        console.log("WIND  : ", balance(user, address(WIND)));
-        console.log("EARTH : ", balance(user, address(EARTH)));
-    }
-
     function test_GetReserves() public view {
         (uint256 amountA, uint256 amountB) = UniswapV2Library.getReserves(address(factory), address(FIRE), address(WETH));
         console.log("FIRE WETH : ", amountA, " ", amountB);
