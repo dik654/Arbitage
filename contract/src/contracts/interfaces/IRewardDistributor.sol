@@ -6,7 +6,6 @@ interface IRewardDistributor {
     function updateInvestorInfo(address investor, uint allocPoint) external;
     function notifyReward(uint amount) external;
     function notifyRewardPermit(
-        uint256 amount,
         address owner,
         address spender,
         uint256 value,

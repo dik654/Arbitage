@@ -42,16 +42,29 @@ contract RewardDistributor is IRewardDistributor, Initializable, OwnableUpgradea
      * @notice  initialize variables
      * @dev     set variables instead of constructor on UUPS
      * @param   _owner  contract owner
+     * @param   _rewardToken reward token address
      */
     function initialize(address _owner, address _rewardToken) public initializer {
         __Ownable_init(_owner);
         rewardToken = _rewardToken;
     }
 
+    /**
+     * @notice  add address to authorisation list
+     * @dev     add contract address to authorized contract array
+     * @param   _address  address to add
+     * @return  bool  success
+     */
     function addAuthorizedContract(address _address) public onlyOwner returns (bool) {
         return _addressSet.add(_address);
     }
 
+    /**
+     * @notice  remove address to authorisation list
+     * @dev     remove contract address to authorized contract array
+     * @param   _address  address to remove
+     * @return  bool  success
+     */
     function removeAuthorizedContract(address _address) public onlyOwner returns (bool) {
         return _addressSet.remove(_address);
     }
@@ -116,9 +129,7 @@ contract RewardDistributor is IRewardDistributor, Initializable, OwnableUpgradea
      * @notice  owner notify rewards added on this contract with permit
      * @dev     distribute rewards to investors and emit event with permit
      * @dev     Rewards that are not divided by investor length will be added to remainingReward
-     * @param   _amount  increased rewards amount
      * @param   _owner  param for permit
-     * @param   _spender  param for permit
      * @param   _value  param for permit
      * @param   _deadline  param for permit
      * @param   _v  param for permit
@@ -126,20 +137,19 @@ contract RewardDistributor is IRewardDistributor, Initializable, OwnableUpgradea
      * @param   _s  param for permit
      */
     function notifyRewardPermit(
-        uint256 _amount,
         address _owner,
-        address _spender,
+        address /* _spender */,
         uint256 _value,
         uint256 _deadline,
         uint8 _v,
         bytes32 _r,
         bytes32 _s
     ) external onlyAuthorizedContract {
-        if (_amount == 0) revert ZeroAmount();
-        distributeReward(_amount);
-        try IERC20Permit(rewardToken).permit(_owner, _spender, _value, _deadline, _v, _r, _s) {
-            IERC20(rewardToken).safeTransferFrom(msg.sender, address(this), _amount);
-            emit IncreasedReward(_amount);
+        if (_value == 0) revert ZeroAmount();
+        try IERC20Permit(rewardToken).permit(_owner, address(this), _value, _deadline, _v, _r, _s) {
+            distributeReward(_value);
+            IERC20(rewardToken).safeTransferFrom(_owner, address(this), _value);
+            emit IncreasedReward(_value);
         } catch {
             revert NotImplementPermit(rewardToken);
         }

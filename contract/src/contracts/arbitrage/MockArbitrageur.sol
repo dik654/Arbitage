@@ -89,7 +89,6 @@ contract MockArbitrageur is IArbitrageur, IUniswapV2Callee, Initializable, Ownab
         IERC20(path[0]).safeTransfer(pair, amountToRepay);
         // RewardDistributor로 차익 전송
         // uint256 profitAmount = IERC20(path[0]).balanceOf(this(address));
-        // TODO path[0] 토큰을 rewardToken으로 사용하는 rewardDistributor 주소를 리턴하는 getRewardDistributor함수
         // IRewardDistributor(getRewardDistributor(path[0])).notifyReward(profitAmount);
     }
 
