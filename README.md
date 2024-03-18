@@ -2,10 +2,17 @@
 
 ![image](https://github.com/dik654/Arbitage/assets/33992354/4b4d5235-5915-4a41-ad91-75d0d5fa8f80)
 
+## Introduction
+> This repository contains the logic of earning arbitrage profits and distributing profits to investors using the difference in exchange costs between Uniswap V2 pools.
+These contracts were written under the foundry framework
+Testing and deployment can be done through the following process.
+
+<br/>
+
 ## Installation
 curl -L https://foundry.paradigm.xyz | bash
 foundryup
-<br><br>
+<br/><br/>
 
 ## Test
 ```bash
