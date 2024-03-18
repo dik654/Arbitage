@@ -39,5 +39,6 @@ Distributed under the MIT License. See [License](https://github.com/dik654/Arbit
 <br><br>
 
 ## Contact
-Feel free to question. kimmalee1577@gmail.com
+If you have any questions, please contact me by email <br/>
+> ✉️ ```kimmalee1577@gmail.com```
 
